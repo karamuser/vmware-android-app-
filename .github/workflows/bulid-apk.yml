@@ -28,11 +28,23 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # 1. إنشاء مجلد android إذا لم يكن موجوداً
       - name: Generate Android Folder (If Missing)
         run: |
           if [ ! -d "android" ]; then
             echo "Android directory missing, generating android project files..."
             flutter create . --platforms=android
+          fi
+
+      # 2. تحديث إصدار Android SDK في ملف build.gradle ليصبح 36 وتفادي تعارض file_picker
+      - name: Fix Android Compile SDK Version (Set to 36)
+        run: |
+          BUILD_GRADLE="android/app/build.gradle"
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i 's/compileSdkVersion.*/compileSdkVersion 36/g' $BUILD_GRADLE
+            sed -i 's/targetSdkVersion.*/targetSdkVersion 36/g' $BUILD_GRADLE
+            sed -i 's/compileSdk = .*/compileSdk = 36/g' $BUILD_GRADLE
+            sed -i 's/targetSdk = .*/targetSdk = 36/g' $BUILD_GRADLE
           fi
 
       - name: Fetch Flutter Packages
@@ -46,4 +58,3 @@ jobs:
         with:
           name: free-DROID-release
           path: build/app/outputs/flutter-apk/app-release.apk
-          
