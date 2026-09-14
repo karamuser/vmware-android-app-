@@ -28,7 +28,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 1. إنشاء مجلد android إذا لم يكن موجوداً
+      # 1. إنشاء مجلد android إذا لم يكن موجوداً في الجذر
       - name: Generate Android Folder (If Missing)
         run: |
           if [ ! -d "android" ]; then
@@ -36,21 +36,26 @@ jobs:
             flutter create . --platforms=android
           fi
 
-      # 2. تحديث إصدار Android SDK في ملف build.gradle ليصبح 36 وتفادي تعارض file_picker
-      - name: Fix Android Compile SDK Version (Set to 36)
+      # 2. حقن شرط إجباري لرفع compileSdk لكل المكتبات والمشروع الرئيسي إلى 36
+      - name: Force Compile SDK 36 on All Subprojects
         run: |
-          BUILD_GRADLE="android/app/build.gradle"
-          if [ -f "$BUILD_GRADLE" ]; then
-            sed -i 's/compileSdkVersion.*/compileSdkVersion 36/g' $BUILD_GRADLE
-            sed -i 's/targetSdkVersion.*/targetSdkVersion 36/g' $BUILD_GRADLE
-            sed -i 's/compileSdk = .*/compileSdk = 36/g' $BUILD_GRADLE
-            sed -i 's/targetSdk = .*/targetSdk = 36/g' $BUILD_GRADLE
-          fi
+          cat << 'EOF' >> android/build.gradle
+
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android {
+                          compileSdkVersion 36
+                      }
+                  }
+              }
+          }
+          EOF
 
       - name: Fetch Flutter Packages
         run: flutter pub get
 
-      - name: Build APK File
+      - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Release APK
@@ -58,3 +63,4 @@ jobs:
         with:
           name: free-DROID-release
           path: build/app/outputs/flutter-apk/app-release.apk
+          
