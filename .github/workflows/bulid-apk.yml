@@ -25,19 +25,16 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install Dependencies & Build APK
-        run: |
-          # التاكد من المجلد وتشغيل البناء
-          if [ -d "vmware-android-app-" ]; then
-            cd vmware-android-app-
-          fi
-          flutter pub get
-          flutter build apk --release
+      - name: Install Dependencies
+        working-directory: ./vmware-android-app-
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: ./vmware-android-app-
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: |
-            **/build/app/outputs/flutter-apk/app-release.apk
-            
+          path: vmware-android-app-/build/app/outputs/flutter-apk/app-release.apk
