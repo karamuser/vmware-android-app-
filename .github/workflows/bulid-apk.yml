@@ -2,15 +2,20 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
+
+# إجبار جميع الأوامر على التشغيل داخل المجلد الفرعي للمشروع
+defaults:
+  run:
+    working-directory: ./vmware-android-app-
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Java JDK 17
@@ -19,27 +24,25 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter Framework
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      - name: Grant Execute Permission for Gradlew
+      - name: Grant Gradlew Permissions
         run: chmod +x android/gradlew
         continue-on-error: true
 
-      - name: Fetch Flutter Packages
-        run: |
-          flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
-      - name: Build APK File
-        run: |
-          flutter build apk --release --no-tree-shake-icons
+      - name: Build Release APK
+        run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload Release APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vmware-android-app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: app-release
+          path: vmware-android-app-/build/app/outputs/flutter-apk/app-release.apk
           
