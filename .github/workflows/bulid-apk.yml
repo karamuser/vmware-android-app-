@@ -26,15 +26,13 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        working-directory: ./vmware-android-app-
         run: flutter pub get
 
       - name: Build APK
-        working-directory: ./vmware-android-app-
         run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: vmware-android-app-/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
